@@ -1,39 +1,27 @@
-//get ke through data insert ho skta h?
-//get (post)
-//built in middleware and user defined
-//special method having three parameters(req,res,next) = middleware
-//middleware error handler(error, req,res,next)
-const express = require('express');
+const express = require("express");
+
+const logger = require("./middleware/logger");
+const authMiddleware = require("./middleware/authMiddleware");
+
 const app = express();
-const path = require("path");
-app.use(express.urlencoded({extended:true}));
-app.use(express.json());
-app.use(express.static(path.join(__dirname,"/public")));
-const logger = (req,res,next) => {
-  console.log(`You accessed method: ${req.method} URL: ${req.url} at ${new Date().toISOString()}`);
-  next();
-}
-//app.use(logger);
-app.get('/',(req,res,next)=>{
-  if(req.query.valid){
-    return next()
-  }
-  res.status(400).json({"error:":"not a valid user"})
-},
-(req,res)=>{
-  res.send("welcome to node js")
-})
-//query string - localhost:3000/product?pid=100&pname=mobile
-app.get('/product',logger,(req,res)=>{
-  const {pid,pname} = req.query;
-  
-  res.status(200).json({pid,pname});
-  console.log("product inserted");
+
+app.use(logger);
+
+// Public route: anyone can access it
+app.get("/", (req, res) => {
+res.send("Welcome to my website!");
 });
 
+// Public route: anyone can access it
+app.get("/about", (req, res) => {
+res.send("About Page");
+});
 
-app.listen(3000,(err)=>{
-  if(err){
-    console.log(err.message);
-  }
+// Protected route: requires the correct token
+app.get("/dashboard", authMiddleware, (req, res) => {
+res.send("Welcome to your Dashboard!");
+});
+
+app.listen(3000, () => {
+console.log("Server running on port 3000");
 });
